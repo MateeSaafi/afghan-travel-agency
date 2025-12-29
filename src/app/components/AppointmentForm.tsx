@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { addDoc, collection, Timestamp } from "firebase/firestore";
+import { useState, useEffect } from "react";
+import { addDoc, collection, Timestamp, doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Calendar, Loader2, CheckCircle, AlertCircle } from "lucide-react";
@@ -20,6 +20,39 @@ export default function AppointmentForm({ itemId, itemName }: AppointmentFormPro
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  // Fetch user's full name from Firestore when user is logged in
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (user?.email) {
+        try {
+          // Try to get user document from Firestore
+          const userQuery = await getDoc(doc(db, "users", user.uid));
+          if (userQuery.exists()) {
+            const userData = userQuery.data();
+            // Auto-fill name if it exists in the user profile
+            if (userData.name) {
+              setName(userData.name);
+            } else if (user.displayName) {
+              // Fallback to Firebase Auth displayName
+              setName(user.displayName);
+            }
+          } else if (user.displayName) {
+            // If no Firestore document, use Firebase Auth displayName
+            setName(user.displayName);
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          // Fallback to Firebase Auth displayName if available
+          if (user.displayName) {
+            setName(user.displayName);
+          }
+        }
+      }
+    };
+
+    fetchUserData();
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -82,8 +115,12 @@ export default function AppointmentForm({ itemId, itemName }: AppointmentFormPro
                 onChange={(e) => setName(e.target.value)}
                 required
                 placeholder="John Doe"
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-md py-2 px-3 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-colors"
+                disabled={!!(user && name !== "" && loadingAuth)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-md py-2 px-3 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               />
+              {user && name && (
+                <p className="text-xs text-zinc-500 mt-1">Auto-filled from your profile</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">
