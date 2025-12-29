@@ -9,7 +9,7 @@ import {
 import { auth } from "../firebase";
 import { db } from "../firebase";
 import { LogIn, Mail, Lock } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -20,7 +20,8 @@ const Login = () => {
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
+  const searchParams = useSearchParams();
+  const [isSignUp, setIsSignUp] = useState(searchParams.get("register") === "true");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -28,7 +29,7 @@ const Login = () => {
     if (authLoad) {
       router.replace("/");
     }
-  }, [authLoad]);
+  }, [authLoad, router]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

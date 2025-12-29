@@ -1,127 +1,159 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { addDoc, collection } from "firebase/firestore";
-import { db } from "../firebase";
-import { getAuth } from "firebase/auth";
+import { addDoc, collection, Timestamp } from "firebase/firestore";
+import { auth, db } from "../firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { Calendar, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 
 interface AppointmentFormProps {
   itemId: string;
+  itemName?: string;
 }
 
-export default function AppointmentForm({ itemId }: AppointmentFormProps) {
+export default function AppointmentForm({ itemId, itemName }: AppointmentFormProps) {
+  const [user, loadingAuth] = useAuthState(auth);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [date, setDate] = useState("");
+  const [notes, setNotes] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+
     try {
-      const auth = getAuth();
-      const user = auth.currentUser;
-
-      // Enforce login for setting up an appointment
-      if (!user) {
-        setMessage("You must be logged in to schedule an appointment.");
-        setLoading(false);
-        router.push("/login");
-        return;
-      }
-
       const appointmentData = {
-        userId: user.uid,
-        userEmail: user.email,
+        userId: user?.uid || null,
+        userEmail: user?.email || email,
         itemId,
+        itemName: itemName || null,
         name,
-        email,
+        email: user?.email || email,
         phone,
-        date,
+        notes,
+        status: "pending",
+        createdAt: Timestamp.now(),
+        messages: [],
+        documents: [],
+        requestedDocs: [],
       };
 
-      const docRef = await addDoc(
-        collection(db, "appointments"),
-        appointmentData
-      );
-      console.log("Document written with ID: ", docRef.id);
+      await addDoc(collection(db, "appointments"), appointmentData);
       setSuccess(true);
-      setMessage("We'll contact you as soon as possible to set up a meeting.");
+      setMessage("Your appointment request has been submitted. We'll contact you soon!");
     } catch (e) {
       console.error("Error adding document: ", e);
-      setMessage("Failed to schedule appointment");
+      setMessage("Failed to schedule appointment. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-dark-800 p-6 rounded-xl w-full max-w-2xl mt-12">
-      <h2 className="text-2xl font-semibold mb-6">Make an Appointment</h2>
+    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+      <div className="flex items-center gap-2 mb-6">
+        <Calendar className="w-5 h-5 text-zinc-400" />
+        <h2 className="text-lg font-semibold text-zinc-100">Request Appointment</h2>
+      </div>
+
       {success ? (
-        <div className="p-4 bg-green-100 text-green-800 rounded">{message}</div>
+        <div className="flex items-start gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+          <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-emerald-400 font-medium">Request Submitted!</p>
+            <p className="text-emerald-400/80 text-sm mt-1">{message}</p>
+          </div>
+        </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium">Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              placeholder="Full Name"
-              className="w-full bg-dark-700 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-red-500"
-            />
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                placeholder="John Doe"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-md py-2 px-3 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+                Email
+              </label>
+              {user ? (
+                <div className="w-full bg-zinc-800/50 border border-zinc-700/50 rounded-md py-2 px-3 text-zinc-400 text-sm">
+                  {user.email}
+                </div>
+              ) : (
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="you@example.com"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-md py-2 px-3 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-colors"
+                />
+              )}
+            </div>
           </div>
+
           <div>
-            <label className="block text-sm font-medium">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="example@mail.com"
-              className="w-full bg-dark-700 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-red-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Phone</label>
+            <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+              Phone Number
+            </label>
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               required
-              placeholder="+93700000000"
-              className="w-full bg-dark-700 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="+93 700 000 000"
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-md py-2 px-3 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-colors"
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium">Preferred Date</label>
-            <input
-              type="date"
-              min={new Date().toISOString().split("T")[0]}
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-              className="w-full bg-dark-700 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-red-500"
+            <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+              Additional Notes <span className="text-zinc-500">(optional)</span>
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Any specific requirements or questions..."
+              rows={3}
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-md py-2 px-3 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-colors resize-none"
             />
           </div>
+
+          {message && !success && (
+            <div className="flex items-start gap-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-red-400 text-sm">{message}</p>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 transition-colors"
+            className="w-full inline-flex items-center justify-center gap-2 bg-zinc-100 text-zinc-900 hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2.5 rounded-md font-medium transition-colors"
           >
-            {loading ? "Loading..." : "Ask for Appointment"}
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              "Submit Request"
+            )}
           </button>
-          {message && !success && (
-            <p className="text-red-600 mt-2">{message}</p>
-          )}
         </form>
       )}
     </div>

@@ -1,52 +1,54 @@
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 const Hero: React.FC = () => {
   return (
-    <section className="py-32 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-red-500/10 to-transparent" />
+    <section className="py-24 md:py-32 overflow-hidden relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-zinc-900 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(251,146,60,0.08),rgba(255,255,255,0))]" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-3xl mx-auto text-center">
-          <div className="inline-block mb-4 px-4 py-1 bg-red-500/10 rounded-full text-red-500 text-sm font-medium">
-            Revolutionizing Travel Booking
+          <div className="inline-flex items-center gap-2 mb-6 px-3 py-1 bg-zinc-800/50 border border-zinc-700/50 rounded-full text-zinc-400 text-sm font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            Trusted by 5,000+ customers
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 tracking-tight text-zinc-100">
             The Future of{" "}
-            <span className="bg-gradient-to-r from-red-500 to-red-500 text-transparent bg-clip-text">
-              Online <br /> Travel Booking
+            <span className="bg-gradient-to-r from-zinc-200 via-zinc-400 to-zinc-200 text-transparent bg-clip-text">
+              Travel Booking
             </span>
           </h1>
-          <p className="text-xl text-gray-400 mb-8 leading-relaxed">
-            Join thousands who are already saving on Traveling costs through our
-            Secure Online Travel agency bookings.
+          <p className="text-lg text-zinc-400 mb-8 leading-relaxed max-w-2xl mx-auto">
+            Join thousands who are already saving on travel costs through our
+            secure online travel agency. Visa assistance, flight bookings, and scholarships made simple.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-3">
             <Link
               href="packages?category=all"
-              className="bg-red-500 hover:bg-red-600 px-8 py-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+              className="inline-flex items-center justify-center gap-2 bg-zinc-100 text-zinc-900 hover:bg-zinc-200 px-6 py-3 rounded-md font-medium transition-colors"
             >
-              See Our Packages <ChevronRight className="ml-2 w-4 h-4" />
+              View Packages <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="https://api.whatsapp.com/send?phone=93785105088"
               target="_blank"
-              className="border border-gray-800 hover:border-gray-700 px-8 py-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+              className="inline-flex items-center justify-center border border-zinc-800 hover:bg-zinc-800/50 px-6 py-3 rounded-md font-medium transition-colors text-zinc-300"
             >
-              Get in Touch
+              Contact Us
             </Link>
           </div>
-          <div className="mt-12 pt-12 border-t border-gray-800 grid grid-cols-3 gap-8">
+          <div className="mt-16 pt-10 border-t border-zinc-800/50 grid grid-cols-3 gap-8">
             <div>
-              <div className="text-3xl font-bold text-white mb-1">5k+</div>
-              <div className="text-sm text-gray-400">Satisfied Customers</div>
+              <div className="text-3xl font-bold text-zinc-100 mb-1">5k+</div>
+              <div className="text-sm text-zinc-500">Happy Customers</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-white mb-1">$200K+</div>
-              <div className="text-sm text-gray-400">Cost Saved</div>
+              <div className="text-3xl font-bold text-zinc-100 mb-1">$200K+</div>
+              <div className="text-sm text-zinc-500">Saved for Clients</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-white mb-1">99.9%</div>
-              <div className="text-sm text-gray-400">Success Rate</div>
+              <div className="text-3xl font-bold text-zinc-100 mb-1">99.9%</div>
+              <div className="text-sm text-zinc-500">Success Rate</div>
             </div>
           </div>
         </div>

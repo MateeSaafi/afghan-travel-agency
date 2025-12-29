@@ -5,29 +5,35 @@ import Link from "next/link";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "../firebase";
 import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useUserStore } from "../store/userStore";
 
 const bebasNeue = Bebas_Neue({ subsets: ["latin"], weight: ["400"] });
 
 const Nav = () => {
   const [user, setUser] = useState<User | null>(null);
-  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-    setUser(currentUser);
-  });
+  const { role, fetchUserRole, clearUserRole } = useUserStore();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      if (currentUser?.email) {
+        fetchUserRole(currentUser.email);
+      } else {
+        clearUserRole();
+      }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [fetchUserRole, clearUserRole]);
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      clearUserRole();
       toast.success("Logged out successfully.");
       router.push("/");
     } catch (error) {
@@ -35,6 +41,11 @@ const Nav = () => {
       toast.error("Failed to log out. Try again.");
     }
   };
+
+  // Hide nav on admin pages (AdminNav is used instead)
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   return (
     <nav className="fixed w-full top-0 z-50 backdrop-blur-lg bg-black/50 border-b border-gray-800">
@@ -77,24 +88,41 @@ const Nav = () => {
             </div>
           </div>
           {user ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               <Link
-                onClick={() => {
-                  handleLogout();
-                }}
-                href="/login"
-                className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                href="/my-appointments"
+                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 py-2 border border-white/20 bg-transparent text-white hover:bg-white hover:text-black transition-colors"
+              >
+                My Appointments
+              </Link>
+              {(role === "admin" || role === "superadmin") && (
+                <Link
+                  href="/admin"
+                  className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 py-2 border border-orange-500/50 bg-orange-500/10 text-orange-300 hover:bg-orange-500/20 transition-colors"
+                >
+                  Admin Panel
+                </Link>
+              )}
+              <button
+                onClick={handleLogout}
+                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 py-2 bg-white text-black hover:bg-gray-200 transition-colors"
               >
                 Sign Out
-              </Link>
+              </button>
             </div>
           ) : (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               <Link
                 href="/login"
-                className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 py-2 border border-white/20 bg-transparent text-white hover:bg-white hover:text-black transition-colors"
               >
-                Sign in
+                Sign In
+              </Link>
+              <Link
+                href="/login?register=true"
+                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 py-2 bg-white text-black hover:bg-gray-200 transition-colors"
+              >
+                Register
               </Link>
             </div>
           )}

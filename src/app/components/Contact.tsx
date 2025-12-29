@@ -1,34 +1,38 @@
-import { ChevronRight } from "lucide-react";
+import { ArrowRight, MessageCircle } from "lucide-react";
 import Link from "next/link";
 
 const Contact = () => {
   return (
-    <section id="contact" className="py-32 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-l from-red-500/10 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-l from-red-500/20 to-orange-500/20 blur-3xl" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <h1 className="m-5 text-4xl md:text-5xl lg:text-6xl pb-1 font-extrabold text-center">
-          Have An Inquiry?
-        </h1>
-        <p className="m-5 lg:my-10 text-gray-400 text-center md:text-xl lg:text-2xl md:max-w-xl lg:max-w-2xl md:mx-auto">
-          If you have a general inquiry and would like to speak to our team, you
-          can contact us via Whatsapp by using the button on the left. And if
-          you want to see our packages and prices use the button on the right.
-        </p>
-        <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-          <Link
-            href="https://wa.me/93785105088"
-            target="_blank"
-            className="border border-gray-800 hover:border-gray-700 px-8 py-4 rounded-lg font-medium transition-colors flex items-center justify-center"
-          >
-            Get in Touch <ChevronRight className="ml-2 w-4 h-4" />
-          </Link>
-          <Link
-            href="packages?category=all"
-            className="bg-red-500 hover:bg-red-600 px-8 py-4 rounded-lg font-medium transition-colors flex items-center justify-center"
-          >
-            See Our Packages
-          </Link>
+    <section className="py-20 relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-8 md:p-12 text-center shadow-[0_0_60px_rgba(251,146,60,0.06)]">
+          <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 bg-zinc-800/50 border border-zinc-700/50 rounded-full text-zinc-400 text-sm font-medium">
+            <MessageCircle className="w-4 h-4" />
+            Get in Touch
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-zinc-100 mb-4">
+            Have an Inquiry?
+          </h2>
+          <p className="text-zinc-400 max-w-2xl mx-auto mb-8">
+            If you have a general inquiry and would like to speak to our team, you
+            can contact us via WhatsApp. Or browse our packages to find what you need.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-3">
+            <Link
+              href="https://wa.me/93785105088"
+              target="_blank"
+              className="inline-flex items-center justify-center gap-2 border border-zinc-700 hover:bg-zinc-800 px-6 py-3 rounded-md font-medium transition-colors text-zinc-300"
+            >
+              Contact via WhatsApp
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              href="packages?category=all"
+              className="inline-flex items-center justify-center gap-2 bg-zinc-100 text-zinc-900 hover:bg-zinc-200 px-6 py-3 rounded-md font-medium transition-colors"
+            >
+              View Packages
+            </Link>
+          </div>
         </div>
       </div>
     </section>

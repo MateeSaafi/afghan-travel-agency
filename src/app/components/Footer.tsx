@@ -1,85 +1,93 @@
 import { Bebas_Neue } from "next/font/google";
 import Image from "next/image";
+import Link from "next/link";
 
 const bebasNeue = Bebas_Neue({ subsets: ["latin"], weight: ["400"] });
 
+const footerLinks = [
+  {
+    title: "Services",
+    links: [
+      { label: "Visa Assistance", href: "/packages?category=visa" },
+      { label: "Flight Booking", href: "/packages?category=ticket" },
+      { label: "Scholarships", href: "/packages?category=scholarship" },
+      { label: "Asylum", href: "/packages?category=asylum" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About Us", href: "/about" },
+      { label: "Contact", href: "https://wa.me/93785105088" },
+      { label: "Packages", href: "/packages?category=all" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Privacy Policy", href: "#" },
+      { label: "Terms of Service", href: "#" },
+    ],
+  },
+];
+
 const Footer = () => {
   return (
-    <footer className="border-t border-gray-800 py-16">
+    <footer className="border-t border-zinc-800 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-4 gap-12">
+        <div className="grid md:grid-cols-4 gap-8">
           <div>
-            <div
-              className={`${bebasNeue.className} text-lg flex items-center space-x-2 mb-4`}
-            >
+            <Link href="/" className="flex items-center gap-2 mb-4">
               <Image
                 src="/logo.png"
                 alt="logo"
-                width={32}
-                height={32}
-                className="w-6 h-6 mr-px"
+                width={24}
+                height={24}
+                className="w-6 h-6"
               />
-              Afghan Travel Agency
-            </div>
-            <p className="text-sm text-gray-400">
-              Revolutionizing Travel Agencies through secure peer-to-peer
-              Booking.
+              <span className={`${bebasNeue.className} text-lg text-zinc-100`}>
+                Afghan Travel Agency
+              </span>
+            </Link>
+            <p className="text-sm text-zinc-500 leading-relaxed">
+              Your trusted partner for visa assistance, flight bookings, and educational opportunities abroad.
             </p>
           </div>
-          {[
-            {
-              title: "Product",
-              links: ["Features", "Security", "Pricing", "Network"],
-            },
-            {
-              title: "Company",
-              links: ["About", "Blog", "Careers", "Press"],
-            },
-            {
-              title: "Resources",
-              links: ["Documentation", "Help Center", "API", "Status"],
-            },
-          ].map((section, index) => (
+          {footerLinks.map((section, index) => (
             <div key={index}>
-              <h4 className="font-semibold mb-4">{section.title}</h4>
+              <h4 className="text-sm font-semibold text-zinc-300 mb-4">{section.title}</h4>
               <ul className="space-y-2">
                 {section.links.map((link, lIndex) => (
                   <li key={lIndex}>
-                    <a
-                      href="#"
-                      className="text-sm text-gray-400 hover:text-white transition-colors"
+                    <Link
+                      href={link.href}
+                      className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
                     >
-                      {link}
-                    </a>
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
             </div>
           ))}
         </div>
-        <div className="mt-16 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
-          <div className="text-sm text-gray-400">
-            ©2025 Afghan Travel Agency. All rights reserved.
+        <div className="mt-12 pt-8 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="text-sm text-zinc-500">
+            © 2025 Afghan Travel Agency. All rights reserved.
           </div>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <a
+          <div className="flex items-center gap-6">
+            <Link
               href="#"
-              className="text-sm text-gray-400 hover:text-white transition-colors"
+              className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
             >
               Privacy
-            </a>
-            <a
+            </Link>
+            <Link
               href="#"
-              className="text-sm text-gray-400 hover:text-white transition-colors"
+              className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
             >
               Terms
-            </a>
-            <a
-              href="#"
-              className="text-sm text-gray-400 hover:text-white transition-colors"
-            >
-              Cookies
-            </a>
+            </Link>
           </div>
         </div>
       </div>

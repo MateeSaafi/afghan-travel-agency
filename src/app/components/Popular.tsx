@@ -1,6 +1,7 @@
 import { collection, getDocs, query } from "firebase/firestore";
-import { db } from "../firebase"; // Using your existing Firestore instance
+import { db } from "../firebase";
 import Image from "next/image";
+import { TrendingUp } from "lucide-react";
 
 type Item = {
   id: string;
@@ -10,7 +11,6 @@ type Item = {
 };
 
 async function getPopularItems() {
-  // Fetch all appointments
   const appointmentsSnapshot = await getDocs(collection(db, "appointments"));
   const appointmentsCounts: Record<string, number> = {};
 
@@ -22,13 +22,11 @@ async function getPopularItems() {
     }
   });
 
-  // Get top 3 items based on the highest appointment count
   const topItemIds = Object.entries(appointmentsCounts)
     .sort(([, countA], [, countB]) => countB - countA)
     .slice(0, 3)
     .map(([itemId]) => itemId);
 
-  // Fetch items collection
   const itemsSnapshot = await getDocs(query(collection(db, "items")));
   const items: Item[] = [];
 
@@ -47,34 +45,47 @@ export default async function Popular() {
   const items = await getPopularItems();
 
   return (
-    <section id="services" className="py-32 relative overflow-hidden">
-      <div className="container mx-auto max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="m-5 py-10 text-4xl md:text-5xl lg:text-6xl font-extrabold text-transparent text-center bg-clip-text bg-gradient-to-r from-red-900 to-red-500">
-          Popular Packages
-        </h1>
+    <section className="py-20 relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 bg-zinc-800/50 border border-zinc-700/50 rounded-full text-zinc-400 text-sm font-medium">
+            <TrendingUp className="w-4 h-4" />
+            Most Requested
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-zinc-100">
+            Popular Packages
+          </h2>
+        </div>
         {items.length === 0 ? (
-          <p className="text-gray-400">No popular items found.</p>
+          <p className="text-zinc-500 text-center">No popular items found.</p>
         ) : (
-          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-            {items.map((item) => (
-              <li
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {items.map((item, index) => (
+              <div
                 key={item.id}
-                className="bg-dark-800/50 backdrop-blur p-4 rounded-lg"
+                className="group bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden hover:border-orange-500/20 hover:shadow-[0_0_30px_rgba(251,146,60,0.08)] transition-all duration-300"
               >
-                <h3 className="text-xl">{item.name}</h3>
-                <div className="relative h-64 w-full mb-2">
+                <div className="relative h-48 w-full overflow-hidden">
                   <Image
                     src={item.image}
                     alt={item.name}
                     fill
                     style={{ objectFit: "cover" }}
-                    className="rounded-lg"
+                    className="group-hover:scale-105 transition-transform duration-300"
                   />
+                  <div className="absolute top-3 left-3">
+                    <span className="inline-flex items-center px-2 py-1 rounded-md bg-zinc-900/80 backdrop-blur-sm text-xs font-medium text-orange-300/90 border border-orange-500/30">
+                      #{index + 1} Trending
+                    </span>
+                  </div>
                 </div>
-                <h3 className="text-lg text-dark-500">{item.headline}</h3>
-              </li>
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold text-zinc-100 mb-1">{item.name}</h3>
+                  <p className="text-sm text-zinc-500">{item.headline}</p>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </section>
