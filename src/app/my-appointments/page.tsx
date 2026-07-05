@@ -222,25 +222,29 @@ export default function MyAppointments() {
     }
   };
 
-  const uploadDocument = async (file: File) => {
-    if (!selectedAppointment || !user) return;
+  const uploadDocuments = async (files: FileList) => {
+    if (!selectedAppointment || !user || files.length === 0) return;
 
     setUploadingDoc(true);
     try {
       const idToken = await user.getIdToken();
-      const uploaded = await uploadFile(file, "document", idToken);
-
-      const appointmentRef = doc(db, "appointments", selectedAppointment.id);
-      await updateDoc(appointmentRef, {
-        documents: arrayUnion({
+      const uploadedDocs = [];
+      for (const file of Array.from(files)) {
+        const uploaded = await uploadFile(file, "document", idToken);
+        uploadedDocs.push({
           name: file.name,
           url: uploaded.url,
           uploadedAt: Timestamp.now(),
-        }),
+        });
+      }
+
+      const appointmentRef = doc(db, "appointments", selectedAppointment.id);
+      await updateDoc(appointmentRef, {
+        documents: arrayUnion(...uploadedDocs),
         status: "documents_uploaded",
       });
     } catch (error) {
-      console.error("Error uploading document:", error);
+      console.error("Error uploading documents:", error);
     } finally {
       setUploadingDoc(false);
     }
@@ -447,15 +451,20 @@ export default function MyAppointments() {
                         </div>
                       )}
 
-                      {/* Requested Documents */}
-                      {selectedAppointment.status === "documents_requested" &&
+                      {/* Requested Documents — stays visible after the first
+                          upload so the user can add the remaining files */}
+                      {(selectedAppointment.status === "documents_requested" ||
+                        selectedAppointment.status === "documents_uploaded") &&
                         selectedAppointment.requestedDocs &&
                         selectedAppointment.requestedDocs.length > 0 && (
                           <div className="p-4 bg-orange-500/5 border border-orange-500/20 rounded-lg">
                             <div className="flex items-center gap-2 mb-3">
                               <FileText className="w-4 h-4 text-orange-400" />
                               <h3 className="font-medium text-orange-400">
-                                Documents Requested
+                                {selectedAppointment.status ===
+                                "documents_requested"
+                                  ? "Documents Requested"
+                                  : "Add More Documents"}
                               </h3>
                             </div>
                             <ul className="space-y-2 mb-4">
@@ -475,17 +484,24 @@ export default function MyAppointments() {
                               <Upload className="w-4 h-4" />
                               {uploadingDoc
                                 ? "Uploading..."
-                                : "Upload Document"}
+                                : "Upload Documents"}
                               <input
                                 type="file"
+                                multiple
                                 className="hidden"
                                 onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) uploadDocument(file);
+                                  if (e.target.files?.length) {
+                                    uploadDocuments(e.target.files);
+                                  }
+                                  // allow re-selecting the same file later
+                                  e.target.value = "";
                                 }}
                                 disabled={uploadingDoc}
                               />
                             </label>
+                            <p className="mt-2 text-xs text-zinc-500">
+                              You can select several files at once.
+                            </p>
                           </div>
                         )}
 
