@@ -15,6 +15,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { uploadFile } from "../lib/uploadFile";
+import { toast } from "react-toastify";
 import Footer from "../components/Footer";
 import {
   Calendar,
@@ -222,29 +223,49 @@ export default function MyAppointments() {
     }
   };
 
-  const uploadDocuments = async (files: FileList) => {
+  const uploadDocuments = async (files: File[]) => {
     if (!selectedAppointment || !user || files.length === 0) return;
 
     setUploadingDoc(true);
     try {
       const idToken = await user.getIdToken();
       const uploadedDocs = [];
-      for (const file of Array.from(files)) {
-        const uploaded = await uploadFile(file, "document", idToken);
-        uploadedDocs.push({
-          name: file.name,
-          url: uploaded.url,
-          uploadedAt: Timestamp.now(),
-        });
+      const failed: string[] = [];
+      for (const file of files) {
+        try {
+          const uploaded = await uploadFile(file, "document", idToken);
+          uploadedDocs.push({
+            name: file.name,
+            url: uploaded.url,
+            uploadedAt: Timestamp.now(),
+          });
+        } catch (error) {
+          console.error(`Error uploading ${file.name}:`, error);
+          failed.push(file.name);
+        }
       }
 
-      const appointmentRef = doc(db, "appointments", selectedAppointment.id);
-      await updateDoc(appointmentRef, {
-        documents: arrayUnion(...uploadedDocs),
-        status: "documents_uploaded",
-      });
+      // Only touch Firestore if something actually uploaded — arrayUnion()
+      // with zero elements is a silent no-op, so flipping the status here
+      // with an empty list would look "successful" while saving nothing.
+      if (uploadedDocs.length > 0) {
+        const appointmentRef = doc(db, "appointments", selectedAppointment.id);
+        await updateDoc(appointmentRef, {
+          documents: arrayUnion(...uploadedDocs),
+          status: "documents_uploaded",
+        });
+        toast.success(
+          uploadedDocs.length === 1
+            ? "Document uploaded"
+            : `${uploadedDocs.length} documents uploaded`
+        );
+      }
+      if (failed.length > 0) {
+        toast.error(`Failed to upload: ${failed.join(", ")}`);
+      }
     } catch (error) {
       console.error("Error uploading documents:", error);
+      toast.error("Failed to upload documents. Please try again.");
     } finally {
       setUploadingDoc(false);
     }
@@ -490,11 +511,15 @@ export default function MyAppointments() {
                                 multiple
                                 className="hidden"
                                 onChange={(e) => {
-                                  if (e.target.files?.length) {
-                                    uploadDocuments(e.target.files);
-                                  }
-                                  // allow re-selecting the same file later
+                                  // Capture a plain array BEFORE clearing the
+                                  // input: e.target.files is a live FileList,
+                                  // and resetting .value empties it out from
+                                  // under an in-flight async upload.
+                                  const files = e.target.files
+                                    ? Array.from(e.target.files)
+                                    : [];
                                   e.target.value = "";
+                                  if (files.length) uploadDocuments(files);
                                 }}
                                 disabled={uploadingDoc}
                               />
