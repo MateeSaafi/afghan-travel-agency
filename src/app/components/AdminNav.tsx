@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import { Bebas_Neue } from "next/font/google";
 import Link from "next/link";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
@@ -8,8 +7,6 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "../store/userStore";
 import { LogOut, Home } from "lucide-react";
-
-const bebasNeue = Bebas_Neue({ subsets: ["latin"], weight: ["400"] });
 
 const AdminNav = () => {
   const { clearUserRole } = useUserStore();
@@ -34,7 +31,7 @@ const AdminNav = () => {
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2">
               <div
-                className={`${bebasNeue.className} antialiased flex items-center text-lg text-zinc-100`}
+                className="font-display antialiased flex items-center text-lg text-zinc-100"
               >
                 <Image
                   alt="Logo"

@@ -35,16 +35,21 @@ function digest(data: Record<string, unknown>): Digest {
 // announce the same event.
 const SEEN_KEY = "ata-notified-events";
 
+// In-memory fallback so dedupe still works even if localStorage is blocked
+const seenInMemory = new Set<string>();
+
 function markSeen(eventKey: string): boolean {
+  if (seenInMemory.has(eventKey)) return false;
+  seenInMemory.add(eventKey);
   try {
     const seen: string[] = JSON.parse(localStorage.getItem(SEEN_KEY) || "[]");
     if (seen.includes(eventKey)) return false;
     seen.push(eventKey);
     localStorage.setItem(SEEN_KEY, JSON.stringify(seen.slice(-500)));
-    return true;
   } catch {
-    return true; // storage unavailable — better to notify than stay silent
+    // storage unavailable — the in-memory set above still dedupes
   }
+  return true;
 }
 
 function showNotification(title: string, body: string) {
@@ -92,6 +97,13 @@ export default function NotificationProvider() {
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       if (!active) return;
+
+      // On a flaky connection Firestore can emit an EMPTY/partial snapshot
+      // from its local cache before the server responds. Taking that as the
+      // baseline made every appointment look "new" moments later — the
+      // source of the "New booking" toast bursts. Only server-confirmed
+      // snapshots participate in diffing.
+      if (snapshot.metadata.fromCache) return;
 
       const next = new Map<string, Digest>();
       // Notifications are queued per snapshot, then flood-gated: a burst
