@@ -29,7 +29,7 @@ type AppointmentType = {
   itemId: string;
   itemName?: string;
   phone: string;
-  status: "pending" | "processing" | "documents_requested" | "documents_uploaded" | "approved" | "rejected";
+  status: "pending" | "processing" | "documents_requested" | "documents_uploaded" | "approved" | "payment_pending" | "paid" | "completed" | "rejected";
   createdAt: any;
 };
 
@@ -39,6 +39,9 @@ const statusConfig = {
   documents_requested: { label: "Docs Needed", color: "bg-orange-500/10 text-orange-400 border-orange-500/20" },
   documents_uploaded: { label: "Under Review", color: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
   approved: { label: "Approved", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
+  payment_pending: { label: "Awaiting Payment", color: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
+  paid: { label: "Paid", color: "bg-green-500/10 text-green-400 border-green-500/20" },
+  completed: { label: "Completed", color: "bg-teal-500/10 text-teal-400 border-teal-500/20" },
   rejected: { label: "Rejected", color: "bg-red-500/10 text-red-400 border-red-500/20" },
 };
 

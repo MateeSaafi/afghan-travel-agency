@@ -27,6 +27,12 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+
+# personal Claude Code settings
+.claude/settings.local.json
+
+# locally stored uploads (package images, documents, deliverables)
+/uploads
 # vercel
 .vercel
 

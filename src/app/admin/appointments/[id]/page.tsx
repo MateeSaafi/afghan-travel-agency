@@ -7,7 +7,6 @@ import { auth, db } from "../../../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import {
   doc,
-  getDoc,
   updateDoc,
   onSnapshot,
   arrayUnion,
@@ -15,6 +14,7 @@ import {
 } from "firebase/firestore";
 import { toast } from "react-toastify";
 import { useUserStore } from "../../../store/userStore";
+import { uploadFile } from "../../../lib/uploadFile";
 import {
   ArrowLeft,
   Send,
@@ -22,6 +22,10 @@ import {
   MessageSquare,
   CheckCircle2,
   Loader2,
+  Upload,
+  CreditCard,
+  Download,
+  Trash2,
 } from "lucide-react";
 
 type Message = {
@@ -36,6 +40,22 @@ type DocumentType = {
   uploadedAt: Timestamp;
 };
 
+type Deliverable = {
+  name: string;
+  path: string;
+  uploadedAt: Timestamp;
+  type: "visa" | "ticket" | "document" | "other";
+};
+
+type Payment = {
+  stripeSessionId?: string;
+  stripePaymentIntentId?: string;
+  amount: number;
+  currency: string;
+  status: "pending" | "succeeded" | "failed" | "expired";
+  paidAt?: Timestamp;
+};
+
 type Appointment = {
   id: string;
   name: string;
@@ -44,12 +64,15 @@ type Appointment = {
   itemName?: string;
   phone: string;
   notes?: string;
-  status: "pending" | "processing" | "documents_requested" | "documents_uploaded" | "approved" | "rejected";
+  status: "pending" | "processing" | "documents_requested" | "documents_uploaded" | "approved" | "payment_pending" | "paid" | "completed" | "rejected";
   createdAt: Timestamp;
   messages: Message[];
   documents: DocumentType[];
   requestedDocs?: string[];
   adminNote?: string;
+  deliverables?: Deliverable[];
+  payment?: Payment;
+  approvedPrice?: number;
 };
 
 const statusConfig = {
@@ -58,8 +81,18 @@ const statusConfig = {
   documents_requested: { label: "Docs Needed", color: "bg-orange-500/10 text-orange-400 border-orange-500/20" },
   documents_uploaded: { label: "Under Review", color: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
   approved: { label: "Approved", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
+  payment_pending: { label: "Payment Pending", color: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
+  paid: { label: "Paid", color: "bg-green-500/10 text-green-400 border-green-500/20" },
+  completed: { label: "Completed", color: "bg-teal-500/10 text-teal-400 border-teal-500/20" },
   rejected: { label: "Rejected", color: "bg-red-500/10 text-red-400 border-red-500/20" },
 };
+
+const deliverableTypes = [
+  { value: "visa", label: "Visa" },
+  { value: "ticket", label: "Ticket" },
+  { value: "document", label: "Document" },
+  { value: "other", label: "Other" },
+] as const;
 
 export default function AppointmentDetail() {
   const { id } = useParams();
@@ -73,6 +106,9 @@ export default function AppointmentDetail() {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [requestedDocsInput, setRequestedDocsInput] = useState("");
   const [adminNoteInput, setAdminNoteInput] = useState("");
+  const [uploadingDeliverable, setUploadingDeliverable] = useState(false);
+  const [deliverableType, setDeliverableType] = useState<Deliverable["type"]>("document");
+  const [deletingDeliverable, setDeletingDeliverable] = useState<number | null>(null);
 
   // Fetch user role
   useEffect(() => {
@@ -111,6 +147,9 @@ export default function AppointmentDetail() {
           documents: data.documents || [],
           requestedDocs: data.requestedDocs || [],
           adminNote: data.adminNote,
+          deliverables: data.deliverables || [],
+          payment: data.payment,
+          approvedPrice: data.approvedPrice,
         });
         setRequestedDocsInput(data.requestedDocs?.join(", ") || "");
         setAdminNoteInput(data.adminNote || "");
@@ -124,10 +163,56 @@ export default function AppointmentDetail() {
   const updateStatus = async (newStatus: Appointment["status"]) => {
     if (!appointment) return;
     try {
-      await updateDoc(doc(db, "appointments", appointment.id), { status: newStatus });
+      await updateDoc(doc(db, "appointments", appointment.id), {
+        status: newStatus,
+      });
       toast.success(`Status updated to ${statusConfig[newStatus].label}`);
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      toast.error(errorMessage);
+    }
+  };
+
+  const uploadDeliverable = async (file: File) => {
+    if (!appointment || !user) return;
+
+    setUploadingDeliverable(true);
+    try {
+      const idToken = await user.getIdToken();
+      const uploaded = await uploadFile(file, "deliverable", idToken);
+
+      await updateDoc(doc(db, "appointments", appointment.id), {
+        deliverables: arrayUnion({
+          name: file.name,
+          path: uploaded.path,
+          uploadedAt: Timestamp.now(),
+          type: deliverableType,
+        }),
+      });
+      toast.success("Deliverable uploaded successfully");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      toast.error(errorMessage);
+    } finally {
+      setUploadingDeliverable(false);
+    }
+  };
+
+  const deleteDeliverable = async (index: number) => {
+    if (!appointment || !appointment.deliverables) return;
+
+    setDeletingDeliverable(index);
+    try {
+      const updatedDeliverables = appointment.deliverables.filter((_, i) => i !== index);
+      await updateDoc(doc(db, "appointments", appointment.id), {
+        deliverables: updatedDeliverables,
+      });
+      toast.success("Deliverable removed");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      toast.error(errorMessage);
+    } finally {
+      setDeletingDeliverable(null);
     }
   };
 
@@ -145,8 +230,9 @@ export default function AppointmentDetail() {
       });
       setNewMessage("");
       toast.success("Message sent");
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      toast.error(errorMessage);
     } finally {
       setSendingMessage(false);
     }
@@ -163,8 +249,9 @@ export default function AppointmentDetail() {
         adminNote: adminNoteInput.trim() || null,
       });
       toast.success("Document request sent");
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      toast.error(errorMessage);
     }
   };
 
@@ -237,7 +324,7 @@ export default function AppointmentDetail() {
               <div>
                 <p className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Update Status</p>
                 <div className="flex flex-wrap gap-2">
-                  {(["pending", "processing", "approved", "rejected"] as const).map((status) => (
+                  {(["pending", "processing", "approved", "completed", "rejected"] as const).map((status) => (
                     <button
                       key={status}
                       onClick={() => updateStatus(status)}
@@ -245,6 +332,8 @@ export default function AppointmentDetail() {
                       className={`px-2.5 py-1 text-xs font-medium rounded-md border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                         status === "approved"
                           ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
+                          : status === "completed"
+                          ? "bg-teal-500/10 text-teal-400 border-teal-500/30 hover:bg-teal-500/20"
                           : status === "rejected"
                           ? "bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20"
                           : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700"
@@ -332,6 +421,122 @@ export default function AppointmentDetail() {
                   </a>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Payment Info */}
+          {appointment.payment && (
+            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <CreditCard className="w-4 h-4 text-green-400" />
+                <h2 className="font-medium text-zinc-200">Payment Information</h2>
+              </div>
+              <div className="grid sm:grid-cols-3 gap-4">
+                <div>
+                  <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Amount</p>
+                  <p className="text-sm text-zinc-300">
+                    ${((appointment.payment.amount || 0) / 100).toFixed(2)} {appointment.payment.currency?.toUpperCase()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Status</p>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                    appointment.payment.status === "succeeded"
+                      ? "bg-green-500/10 text-green-400"
+                      : appointment.payment.status === "pending"
+                      ? "bg-amber-500/10 text-amber-400"
+                      : "bg-red-500/10 text-red-400"
+                  }`}>
+                    {appointment.payment.status}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Paid At</p>
+                  <p className="text-sm text-zinc-300">
+                    {appointment.payment.paidAt?.toDate?.()?.toLocaleString() || "Pending"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Upload Deliverables - available once the booking is paid */}
+          {(appointment.payment?.status === "succeeded" ||
+            appointment.status === "paid" ||
+            appointment.status === "completed") && (
+            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Upload className="w-4 h-4 text-green-400" />
+                <h2 className="font-medium text-zinc-200">Upload Deliverables</h2>
+              </div>
+              <p className="text-sm text-zinc-400 mb-4">
+                Upload visa, tickets, or other documents for the customer to download.
+              </p>
+              <div className="flex flex-wrap items-end gap-3">
+                <div>
+                  <label className="block text-xs text-zinc-500 mb-1">Type</label>
+                  <select
+                    value={deliverableType}
+                    onChange={(e) => setDeliverableType(e.target.value as Deliverable["type"])}
+                    className="bg-zinc-950 border border-zinc-700 rounded-md py-2 px-3 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-green-500/50"
+                  >
+                    {deliverableTypes.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <label className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-400 border border-green-500/30 rounded-md text-sm font-medium cursor-pointer hover:bg-green-500/20 transition-colors">
+                  <Upload className="w-4 h-4" />
+                  {uploadingDeliverable ? "Uploading..." : "Upload File"}
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) uploadDeliverable(file);
+                    }}
+                    disabled={uploadingDeliverable}
+                  />
+                </label>
+              </div>
+
+              {/* Uploaded Deliverables List */}
+              {appointment.deliverables && appointment.deliverables.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-sm font-medium text-zinc-300 mb-3">Uploaded Deliverables</h3>
+                  <div className="space-y-2">
+                    {appointment.deliverables.map((deliverable, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center gap-3 p-3 bg-zinc-800/50 border border-zinc-700/50 rounded-lg"
+                      >
+                        <Download className="w-4 h-4 text-green-400" />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm text-zinc-300 truncate block">{deliverable.name}</span>
+                          <span className="text-xs text-zinc-500 capitalize">{deliverable.type}</span>
+                        </div>
+                        <span className="text-xs text-zinc-500">
+                          {deliverable.uploadedAt?.toDate?.()?.toLocaleDateString() || ""}
+                        </span>
+                        <button
+                          onClick={() => deleteDeliverable(idx)}
+                          disabled={deletingDeliverable === idx}
+                          className="p-1.5 text-red-400 hover:bg-red-500/10 rounded transition-colors disabled:opacity-50"
+                          title="Remove deliverable"
+                        >
+                          {deletingDeliverable === idx ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

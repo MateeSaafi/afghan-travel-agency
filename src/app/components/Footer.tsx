@@ -1,8 +1,5 @@
-import { Bebas_Neue } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
-
-const bebasNeue = Bebas_Neue({ subsets: ["latin"], weight: ["400"] });
 
 const footerLinks = [
   {
@@ -33,11 +30,14 @@ const footerLinks = [
 
 const Footer = () => {
   return (
-    <footer className="border-t border-zinc-800 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-4 gap-8">
-          <div>
-            <Link href="/" className="flex items-center gap-2 mb-4">
+    <footer className="border-t border-white/5 pt-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 gap-10 md:grid-cols-4">
+          <div className="col-span-2 md:col-span-1">
+            <Link
+              href="/"
+              className="flex items-center gap-2 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400"
+            >
               <Image
                 src="/logo.png"
                 alt="logo"
@@ -45,23 +45,25 @@ const Footer = () => {
                 height={24}
                 className="w-6 h-6"
               />
-              <span className={`${bebasNeue.className} text-lg text-zinc-100`}>
+              <span className="font-display text-lg text-amber-50">
                 Afghan Travel Agency
               </span>
             </Link>
-            <p className="text-sm text-zinc-500 leading-relaxed">
+            <p className="mt-4 text-sm/6 text-stone-400">
               Your trusted partner for visa assistance, flight bookings, and educational opportunities abroad.
             </p>
           </div>
           {footerLinks.map((section, index) => (
             <div key={index}>
-              <h4 className="text-sm font-semibold text-zinc-300 mb-4">{section.title}</h4>
-              <ul className="space-y-2">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-300">
+                {section.title}
+              </h3>
+              <ul className="mt-4 space-y-2.5">
                 {section.links.map((link, lIndex) => (
                   <li key={lIndex}>
                     <Link
                       href={link.href}
-                      className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+                      className="rounded-sm text-sm text-stone-400 transition-colors hover:text-amber-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400"
                     >
                       {link.label}
                     </Link>
@@ -71,24 +73,29 @@ const Footer = () => {
             </div>
           ))}
         </div>
-        <div className="mt-12 pt-8 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-sm text-zinc-500">
-            © 2025 Afghan Travel Agency. All rights reserved.
-          </div>
+        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-8 md:flex-row">
+          <p className="text-sm text-stone-400">
+            © 2026 Afghan Travel Agency. All rights reserved.
+          </p>
           <div className="flex items-center gap-6">
             <Link
               href="#"
-              className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+              className="rounded-sm text-sm text-stone-400 transition-colors hover:text-amber-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400"
             >
               Privacy
             </Link>
             <Link
               href="#"
-              className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+              className="rounded-sm text-sm text-stone-400 transition-colors hover:text-amber-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400"
             >
               Terms
             </Link>
           </div>
+        </div>
+        <div className="mt-10 overflow-hidden" aria-hidden="true">
+          <p className="font-display -mb-3 select-none whitespace-nowrap text-center text-[12vw] leading-none text-amber-50/3">
+            AFGHAN TRAVEL AGENCY
+          </p>
         </div>
       </div>
     </footer>

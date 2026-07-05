@@ -3,35 +3,47 @@ import Link from "next/link";
 
 const Contact = () => {
   return (
-    <section className="py-20 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-8 md:p-12 text-center shadow-[0_0_60px_rgba(251,146,60,0.06)]">
-          <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 bg-zinc-800/50 border border-zinc-700/50 rounded-full text-zinc-400 text-sm font-medium">
-            <MessageCircle className="w-4 h-4" />
-            Get in Touch
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-zinc-100 mb-4">
-            Have an Inquiry?
-          </h2>
-          <p className="text-zinc-400 max-w-2xl mx-auto mb-8">
-            If you have a general inquiry and would like to speak to our team, you
-            can contact us via WhatsApp. Or browse our packages to find what you need.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-3">
-            <Link
-              href="https://wa.me/93785105088"
-              target="_blank"
-              className="inline-flex items-center justify-center gap-2 border border-zinc-700 hover:bg-zinc-800 px-6 py-3 rounded-md font-medium transition-colors text-zinc-300"
-            >
-              Contact via WhatsApp
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              href="packages?category=all"
-              className="inline-flex items-center justify-center gap-2 bg-zinc-100 text-zinc-900 hover:bg-zinc-200 px-6 py-3 rounded-md font-medium transition-colors"
-            >
-              View Packages
-            </Link>
+    <section className="py-20 md:py-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-[2.5rem] border border-amber-300/15 bg-surface px-6 py-14 text-center md:px-16 md:py-20">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-linear-to-b from-amber-400/10 via-transparent to-transparent"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute -top-24 left-1/2 h-56 w-136 -translate-x-1/2 rounded-full bg-orange-500/15 blur-3xl"
+          />
+          <div className="relative">
+            <p className="flex items-center justify-center gap-3 text-xs font-semibold uppercase tracking-[0.25em] text-stone-400">
+              <span aria-hidden="true" className="font-display text-lg leading-none text-amber-400">
+                05
+              </span>
+              <span aria-hidden="true" className="h-px w-8 bg-amber-300/20"></span>
+              Get in touch
+            </p>
+            <h2 className="mt-3 text-3xl md:text-4xl font-bold tracking-tight text-amber-50">
+              Talk to a Real Person
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-base/7 text-stone-300">
+              Message us on WhatsApp and a member of our Kabul team will answer
+              your questions directly — real people, real answers.
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link
+                href="https://wa.me/93785105088"
+                target="_blank"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-linear-to-b from-amber-400 to-orange-500 px-6 py-3 font-semibold text-stone-950 shadow-lg shadow-orange-950/40 transition hover:from-amber-300 hover:to-orange-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 sm:w-auto"
+              >
+                <MessageCircle className="size-4" /> Chat on WhatsApp
+              </Link>
+              <Link
+                href="/packages?category=all"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-stone-700 bg-white/2 px-6 py-3 font-medium text-stone-200 transition hover:border-amber-300/40 hover:bg-stone-900/60 hover:text-amber-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 sm:w-auto"
+              >
+                View Packages <ArrowRight className="size-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>

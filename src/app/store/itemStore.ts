@@ -11,6 +11,7 @@ export interface Item {
   price: number;
   image: string;
   requiredDocs: string[];
+  createdAt?: number;
 }
 
 interface ItemStore {

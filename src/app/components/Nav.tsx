@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import { Bebas_Neue } from "next/font/google";
 import Link from "next/link";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "../firebase";
@@ -8,8 +7,6 @@ import { toast } from "react-toastify";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useUserStore } from "../store/userStore";
-
-const bebasNeue = Bebas_Neue({ subsets: ["latin"], weight: ["400"] });
 
 const Nav = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -48,85 +45,84 @@ const Nav = () => {
   }
 
   return (
-    <nav className="fixed w-full top-0 z-50 backdrop-blur-lg bg-black/50 border-b border-gray-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/">
-              <div
-                className={`${bebasNeue.className} antialiased flex items-center text-xl`}
-              >
-                <Image
-                  alt="Logo"
-                  width={32}
-                  height={32}
-                  src="/logo.png"
-                  className="w-8 h-8 mr-px"
-                />
-                <p>Afghan Travel Agency</p>
-              </div>
+    <nav className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-night/70 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-6">
+          <Link
+            href="/"
+            className="rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400"
+          >
+            <div className="font-display flex items-center gap-1.5 text-xl text-amber-50">
+              <Image
+                alt="Logo"
+                width={32}
+                height={32}
+                src="/logo.png"
+                className="w-8 h-8"
+              />
+              <p className="max-[380px]:hidden">Afghan Travel Agency</p>
+            </div>
+          </Link>
+          <div className="hidden md:flex items-center gap-6 text-sm text-stone-400">
+            <Link
+              href="/packages"
+              className="rounded-sm transition-colors hover:text-amber-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400"
+            >
+              Packages
             </Link>
-            <div className="hidden md:flex text-sm text-gray-400 gap-4">
-              <Link
-                href="/packages"
-                className="hover:text-white transition-colors"
-              >
-                Packages
-              </Link>
-              <Link
-                href="/about"
-                className="hover:text-white transition-colors"
-              >
-                About
-              </Link>
-              <Link
-                href="/contact"
-                className="hover:text-white transition-colors"
-              >
-                Contact
-              </Link>
-            </div>
+            <Link
+              href="/about"
+              className="rounded-sm transition-colors hover:text-amber-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400"
+            >
+              About
+            </Link>
+            <Link
+              href="/contact"
+              className="rounded-sm transition-colors hover:text-amber-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400"
+            >
+              Contact
+            </Link>
           </div>
-          {user ? (
-            <div className="flex items-center gap-2">
-              <Link
-                href="/my-appointments"
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 py-2 border border-white/20 bg-transparent text-white hover:bg-white hover:text-black transition-colors"
-              >
-                My Appointments
-              </Link>
-              {(role === "admin" || role === "superadmin") && (
-                <Link
-                  href="/admin"
-                  className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 py-2 border border-orange-500/50 bg-orange-500/10 text-orange-300 hover:bg-orange-500/20 transition-colors"
-                >
-                  Admin Panel
-                </Link>
-              )}
-              <button
-                onClick={handleLogout}
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 py-2 bg-white text-black hover:bg-gray-200 transition-colors"
-              >
-                Sign Out
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Link
-                href="/login"
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 py-2 border border-white/20 bg-transparent text-white hover:bg-white hover:text-black transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/login?register=true"
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 py-2 bg-white text-black hover:bg-gray-200 transition-colors"
-              >
-                Register
-              </Link>
-            </div>
-          )}
         </div>
+        {user ? (
+          <div className="flex items-center gap-2">
+            <Link
+              href="/my-appointments"
+              className="inline-flex h-9 items-center justify-center rounded-lg border border-stone-700 px-3 sm:px-4 text-sm font-medium text-stone-200 transition-colors hover:border-amber-300/40 hover:text-amber-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+            >
+              My Appointments
+            </Link>
+            {(role === "admin" || role === "superadmin") && (
+              <Link
+                href="/admin"
+                className="inline-flex h-9 items-center justify-center rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 sm:px-4 text-sm font-medium text-amber-300 transition-colors hover:bg-amber-400/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+              >
+                Admin Panel
+              </Link>
+            )}
+            <button
+              onClick={handleLogout}
+              className="inline-flex h-9 items-center justify-center rounded-lg bg-stone-100 px-3 sm:px-4 text-sm font-semibold text-stone-900 transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+            >
+              Sign Out
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Link
+              href="/login"
+              className="inline-flex h-9 items-center justify-center rounded-lg border border-stone-700 px-3 sm:px-4 text-sm font-medium text-stone-200 transition-colors hover:border-amber-300/40 hover:text-amber-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/login?register=true"
+              className="inline-flex h-9 items-center justify-center rounded-lg bg-stone-100 px-3 sm:px-4 text-sm font-semibold text-stone-900 transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+            >
+              Register
+            </Link>
+          </div>
+        )}
       </div>
     </nav>
   );

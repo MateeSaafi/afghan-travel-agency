@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import Nav from "./components/Nav";
+import NotificationProvider from "./components/NotificationProvider";
 import { ToastContainer } from "react-toastify";
 
 const inter = Inter({ subsets: ["latin"] });
+const bebas = Bebas_Neue({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-bebas",
+});
 
 export const metadata: Metadata = {
   title: "Afghan Travel Agency",
@@ -19,9 +25,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased bg-black`}>
-        <div className="min-h-screen bg-black text-gray-100">
+      <body className={`${inter.className} ${bebas.variable} antialiased bg-night`}>
+        <div className="min-h-screen bg-night text-stone-200">
           <ToastContainer theme="dark" draggable position="bottom-right" />
+          <NotificationProvider />
           <Nav />
           {children}
         </div>
