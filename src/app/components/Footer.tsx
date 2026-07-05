@@ -92,11 +92,14 @@ const Footer = () => {
             </Link>
           </div>
         </div>
-        <div className="mt-10 overflow-hidden" aria-hidden="true">
-          <p className="font-display -mb-3 select-none whitespace-nowrap text-center text-[12vw] leading-none text-amber-50/3">
-            AFGHAN TRAVEL AGENCY
-          </p>
-        </div>
+      </div>
+      {/* Full-bleed ghost wordmark: spans the whole viewport (breaks out of
+          the max-w-7xl content box) and is sized to that full width via a
+          container query, so it fills edge-to-edge without ever clipping */}
+      <div className="mt-10 overflow-hidden @container" aria-hidden="true">
+        <p className="font-display -mb-3 select-none whitespace-nowrap text-center text-[11.5cqw] leading-none text-amber-50/3">
+          AFGHAN TRAVEL AGENCY
+        </p>
       </div>
     </footer>
   );
